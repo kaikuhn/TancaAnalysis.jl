@@ -10,7 +10,7 @@ end
 
 
 """
-    readData(workingDir::String, parts::Int)
+    getArduinoData(workingDir::String, parts::Int)
 
 Reads all the root Data created by the TancaDataAcquisition program from one woking directory.
 

@@ -10,7 +10,7 @@ This project is the extension to the TancaDataAcquisition project. It is a packa
 The function `readData(workingDir::String, parts::Int)` returns two StructArrays with data mainly recorded with the Arduino Uno:
 
 ```
-readData(workingDir::String, parts::Int)
+    getArduinoData(workingDir::String, parts::Int)
 
 Reads all the root Data created by the TancaDataAcquisition program from one woking directory.
 
@@ -48,21 +48,20 @@ end
 ```
 using TancaAnalysis, Plots, Dates
 
-# get the Arduino Data Trees
 data2, data3 = getArduinoData("testdata/", 3)
 
-# format data
+# data
 time  = DateTime(1970, 1, 1) .+ Millisecond.(div.(data2.time, 10^6))
-time_str = Dates.format.(time, "HH:MM")
-
 rate  = data2.rate
 pAtm  = data2.pAtm
 
+time_str = Dates.format.(time, "yyyy-mm-dd HH") 
+
 # plot rate on the left y axis
-plot(time_str, rate, color=:blue, label="Rate", ylabel="Rate", dpi=600)
+plot(time_str, rate, color=:blue, label="Rate", ylabel="Rate / Hz", xlabel="Time", dpi=600)
 
 # plot pressure on the right y axis
-plot!(twinx(), time_str, pAtm, color=:red, label="pAtm", ylabel="pAtm (atm)")
+plot!(twinx(), time_str, pAtm, color=:red, label="Pressure", ylabel="Pressure / mbar")
 
 savefig("RatePressure.png")
 ```
@@ -76,16 +75,17 @@ savefig("RatePressure.png")
 The function `getHistogram(workingDir::String, bins::Int)` returns a list of Histograms of the Area under the mesured peaks for eeach hour:
 
 ```
-getSpectrum(workingDir::String)
+    getHistogram(workingDir::String, bins::Int; maxVal::Int=nothing)::AbstractMatrix
 
-Returns List of Spectrums, one for every hour.
+Returns Matrix of Histograms, one for every hour and every channel.
 
 # Arguments:
 - `workingDir::String`: folder of all root-Files
 - `bins::Int`: Number of bins for the Spectrum
+- `maxVal::Int`: Maximum number of events for Histogram calculation
 
 # Output:
-- `Array(Histogram)`
+- `HistogramMatrix(x1, y1, x2, y2, x3, y3)`
 ```
 
 ### Usage example
@@ -93,11 +93,12 @@ Returns List of Spectrums, one for every hour.
 ```
 using TancaAnalysis, Plots
 
-# get the list of histograms
-Hist = getHistogram("testdata/", 10000)
+Hist = getHistogram("testdata/", 200; maxVal=1000000)
 
-# plot one example histogram
-plot(Hist[1][1200:1500], label="Histogram", xlabel="∝Energy", ylabel="Density", dpi=600)
+# plot histogram
+plot(Hist[1,1], Hist[2,1], label="Histogram CH0", xlabel="∝Energy", ylabel="Density", dpi=600)
+plot!(Hist[3,1], Hist[4,1], label="Histogram CH1")
+plot!(Hist[5,1], Hist[6,1], label="Histogram CH2")
 
 savefig("Histogram.png")
 ```
